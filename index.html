@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dumpy Level Leveling Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .base-rl-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+
+        .base-rl-section label {
+            font-weight: 600;
+            color: #333;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .base-rl-section input {
+            width: 200px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            transition: border-color 0.3s;
+        }
+
+        .base-rl-section input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-clear {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #c82333;
+        }
+
+        .btn-import {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-import:hover {
+            background: #218838;
+        }
+
+        .btn-export {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: #138496;
+        }
+
+        #csvFileInput {
+            display: none;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .calculated {
+            background: #f0f4ff;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-remove:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .summary {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .error {
+            border-color: #dc3545 !important;
+            background: #fff5f5 !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            /* Make table scroll horizontally on mobile */
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 800px; /* Prevent table from being too compressed */
+            }
+
+            th, td {
+                padding: 10px 8px;
+                font-size: 13px;
+                min-width: 80px; /* Ensure minimum width for each column */
+            }
+
+            /* Make input fields larger and easier to tap on mobile */
+            input[type="number"], input[type="text"] {
+                padding: 10px 8px;
+                font-size: 16px; /* Prevents iOS zoom on focus */
+                min-height: 44px; /* iOS recommended tap target size */
+                border: 2px solid #ddd;
+            }
+
+            /* Make BS, IS, FS columns wider on mobile */
+            th:nth-child(2), th:nth-child(3), th:nth-child(4),
+            td:nth-child(2), td:nth-child(3), td:nth-child(4) {
+                min-width: 100px;
+            }
+
+            /* Make station column narrower */
+            th:nth-child(1), td:nth-child(1) {
+                min-width: 60px;
+            }
+
+            /* Make action column narrower */
+            th:nth-child(9), td:nth-child(9) {
+                min-width: 60px;
+            }
+
+            .btn-remove {
+                padding: 8px 14px;
+                font-size: 14px;
+                min-height: 40px;
+            }
+
+            .summary {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📐 Dumpy Level Leveling Calculator</h1>
+        <p class="subtitle">Rise/Fall Method - Real-time Calculation</p>
+
+        <div class="base-rl-section">
+            <label for="baseRL">Starting Reduced Level (RL):</label>
+            <input type="number" id="baseRL" step="0.001" placeholder="Enter base RL (e.g., 100.000)" value="100.000">
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-add" onclick="addRow()">
+                <span>+</span> Add Row
+            </button>
+            <button class="btn btn-clear" onclick="clearAll()">
+                Clear All
+            </button>
+            <button class="btn btn-import" onclick="document.getElementById('csvFileInput').click()">
+                📥 Import CSV (Input Values)
+            </button>
+            <button class="btn btn-export" onclick="exportInputValues()">
+                📤 Export Input Values
+            </button>
+            <button class="btn btn-export" onclick="exportFullData()">
+                📊 Export Full Results
+            </button>
+            <input type="file" id="csvFileInput" accept=".csv" onchange="importCSV(event)">
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Station</th>
+                        <th>BS (m)</th>
+                        <th>IS (m)</th>
+                        <th>FS (m)</th>
+                        <th>Rise (m)</th>
+                        <th>Fall (m)</th>
+                        <th>RL (m)</th>
+                        <th>Remarks</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTable">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary">
+            <div class="summary-item">
+                <div class="summary-label">Total BS</div>
+                <div class="summary-value" id="totalBS">0.000</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total FS</div>
+                <div class="summary-value" id="totalFS">0.000</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total Rise</div>
+                <div class="summary-value" id="totalRise">0.000</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total Fall</div>
+                <div class="summary-value" id="totalFall">0.000</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Final RL</div>
+                <div class="summary-value" id="finalRL">100.000</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let rowCount = 0;
+
+        function addRow() {
+            rowCount++;
+            const tbody = document.getElementById('dataTable');
+            const row = tbody.insertRow();
+            
+            row.innerHTML = `
+                <td>${rowCount}</td>
+                <td><input type="number" step="0.001" class="bs" oninput="calculate()" placeholder="0.000"></td>
+                <td><input type="number" step="0.001" class="is" oninput="calculate()" placeholder="0.000"></td>
+                <td><input type="number" step="0.001" class="fs" oninput="calculate()" placeholder="0.000"></td>
+                <td class="calculated rise">-</td>
+                <td class="calculated fall">-</td>
+                <td class="calculated rl">-</td>
+                <td><input type="text" class="remarks" placeholder="Optional"></td>
+                <td><button class="btn-remove" onclick="removeRow(this)">×</button></td>
+            `;
+            
+            calculate();
+        }
+
+        function removeRow(btn) {
+            const row = btn.parentElement.parentElement;
+            row.remove();
+            renumberStations();
+            calculate();
+        }
+
+        function renumberStations() {
+            const rows = document.getElementById('dataTable').rows;
+            rowCount = rows.length;
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].cells[0].textContent = i + 1;
+            }
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all data?')) {
+                document.getElementById('dataTable').innerHTML = '';
+                rowCount = 0;
+                calculate();
+            }
+        }
+
+        function calculate() {
+            const baseRL = parseFloat(document.getElementById('baseRL').value) || 0;
+            const rows = document.getElementById('dataTable').rows;
+            
+            let currentRL = baseRL;
+            let totalBS = 0, totalFS = 0, totalRise = 0, totalFall = 0;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const bs = parseFloat(row.querySelector('.bs').value) || 0;
+                const is = parseFloat(row.querySelector('.is').value) || 0;
+                const fs = parseFloat(row.querySelector('.fs').value) || 0;
+                
+                let rise = 0, fall = 0;
+                
+                // Rise/Fall Method Calculation
+                if (i === 0) {
+                    // First row: use BS to establish first RL
+                    if (bs > 0) {
+                        currentRL = baseRL;
+                    }
+                } else {
+                    const prevRow = rows[i - 1];
+                    const prevBS = parseFloat(prevRow.querySelector('.bs').value) || 0;
+                    const prevIS = parseFloat(prevRow.querySelector('.is').value) || 0;
+                    const prevFS = parseFloat(prevRow.querySelector('.fs').value) || 0;
+                    
+                    // Determine what to compare with
+                    let prevSight = prevBS || prevIS;
+                    let currentSight = bs || is || fs;
+                    
+                    if (prevFS > 0) prevSight = prevFS;
+                    
+                    // Calculate rise or fall
+                    if (currentSight > 0 && prevSight > 0) {
+                        const diff = prevSight - currentSight;
+                        if (diff > 0) {
+                            rise = diff;
+                            currentRL += rise;
+                        } else {
+                            fall = Math.abs(diff);
+                            currentRL -= fall;
+                        }
+                    }
+                }
+                
+                // Update display
+                row.querySelector('.rise').textContent = rise > 0 ? rise.toFixed(3) : '-';
+                row.querySelector('.fall').textContent = fall > 0 ? fall.toFixed(3) : '-';
+                row.querySelector('.rl').textContent = currentRL.toFixed(3);
+                
+                // Accumulate totals
+                totalBS += bs;
+                totalFS += fs;
+                totalRise += rise;
+                totalFall += fall;
+            }
+            
+            // Update summary
+            document.getElementById('totalBS').textContent = totalBS.toFixed(3);
+            document.getElementById('totalFS').textContent = totalFS.toFixed(3);
+            document.getElementById('totalRise').textContent = totalRise.toFixed(3);
+            document.getElementById('totalFall').textContent = totalFall.toFixed(3);
+            document.getElementById('finalRL').textContent = currentRL.toFixed(3);
+        }
+
+        // Initialize with base RL change listener
+        document.getElementById('baseRL').addEventListener('input', calculate);
+
+        // CSV Import Function
+        function importCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n').filter(line => line.trim());
+                
+                // Clear existing rows
+                document.getElementById('dataTable').innerHTML = '';
+                rowCount = 0;
+
+                // Skip header line if it exists
+                const startIndex = lines[0].toLowerCase().includes('station') || 
+                                   lines[0].toLowerCase().includes('bs') ? 1 : 0;
+
+                for (let i = startIndex; i < lines.length; i++) {
+                    const values = lines[i].split(',').map(v => v.trim());
+                    if (values.length >= 3) {
+                        rowCount++;
+                        const tbody = document.getElementById('dataTable');
+                        const row = tbody.insertRow();
+                        
+                        row.innerHTML = `
+                            <td>${rowCount}</td>
+                            <td><input type="number" step="0.001" class="bs" oninput="calculate()" placeholder="0.000" value="${values[0] || ''}"></td>
+                            <td><input type="number" step="0.001" class="is" oninput="calculate()" placeholder="0.000" value="${values[1] || ''}"></td>
+                            <td><input type="number" step="0.001" class="fs" oninput="calculate()" placeholder="0.000" value="${values[2] || ''}"></td>
+                            <td class="calculated rise">-</td>
+                            <td class="calculated fall">-</td>
+                            <td class="calculated rl">-</td>
+                            <td><input type="text" class="remarks" placeholder="Optional" value="${values[3] || ''}"></td>
+                            <td><button class="btn-remove" onclick="removeRow(this)">×</button></td>
+                        `;
+                    }
+                }
+                
+                calculate();
+                alert(`Successfully imported ${rowCount} rows!`);
+            };
+            
+            reader.readAsText(file);
+            // Reset file input
+            event.target.value = '';
+        }
+
+        // Export Input Values Only (BS, IS, FS, Remarks)
+        function exportInputValues() {
+            const rows = document.getElementById('dataTable').rows;
+            if (rows.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+
+            let csv = 'BS,IS,FS,Remarks\n';
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const bs = row.querySelector('.bs').value || '';
+                const is = row.querySelector('.is').value || '';
+                const fs = row.querySelector('.fs').value || '';
+                const remarks = row.querySelector('.remarks').value || '';
+                
+                csv += `${bs},${is},${fs},${remarks}\n`;
+            }
+            
+            downloadCSV(csv, 'leveling_input_values.csv');
+        }
+
+        // Export Full Data (Input + Calculated Values)
+        function exportFullData() {
+            const rows = document.getElementById('dataTable').rows;
+            if (rows.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+
+            const baseRL = document.getElementById('baseRL').value;
+            let csv = `Starting RL: ${baseRL}\n\n`;
+            csv += 'Station,BS,IS,FS,Rise,Fall,RL,Remarks\n';
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const station = row.cells[0].textContent;
+                const bs = row.querySelector('.bs').value || '';
+                const is = row.querySelector('.is').value || '';
+                const fs = row.querySelector('.fs').value || '';
+                const rise = row.querySelector('.rise').textContent;
+                const fall = row.querySelector('.fall').textContent;
+                const rl = row.querySelector('.rl').textContent;
+                const remarks = row.querySelector('.remarks').value || '';
+                
+                csv += `${station},${bs},${is},${fs},${rise},${fall},${rl},${remarks}\n`;
+            }
+            
+            // Add summary
+            csv += '\nSummary\n';
+            csv += `Total BS,${document.getElementById('totalBS').textContent}\n`;
+            csv += `Total FS,${document.getElementById('totalFS').textContent}\n`;
+            csv += `Total Rise,${document.getElementById('totalRise').textContent}\n`;
+            csv += `Total Fall,${document.getElementById('totalFall').textContent}\n`;
+            csv += `Final RL,${document.getElementById('finalRL').textContent}\n`;
+            
+            downloadCSV(csv, 'leveling_full_results.csv');
+        }
+
+        // Helper function to download CSV
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Add first row on load
+        window.addEventListener('load', () => {
+            addRow();
+        });
+    </script>
+</body>
+</html>
